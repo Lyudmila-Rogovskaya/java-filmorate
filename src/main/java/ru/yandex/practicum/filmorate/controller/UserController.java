@@ -1,23 +1,22 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController { // для обслуживания пользователей
     private final Map<Long, User> users = new HashMap<>();
-    private final Map<String, User> emailIndex = new HashMap<>(); // для быстрой проверки email
+    private final Set<String> usedEmails = new HashSet<>();
     private long nextId = 1;
 
     @GetMapping
@@ -27,12 +26,11 @@ public class UserController { // для обслуживания пользов�
     }
 
     @PostMapping
-    public User create(@RequestBody User user) { // создаем нового пользователя
+    public User create(@Valid @RequestBody User user) { // создаем нового пользователя
         log.info("Запрос на создание пользователя: {}", user);
-        validateUser(user);
 
         // уникальность email
-        if (emailIndex.containsKey(user.getEmail())) {
+        if (usedEmails.contains(user.getEmail())) {
             log.warn("Email уже используется: {}", user.getEmail());
             throw new DuplicatedDataException("Этот имейл уже используется");
         }
@@ -45,16 +43,15 @@ public class UserController { // для обслуживания пользов�
         // генерация id
         user.setId(nextId++);
         users.put(user.getId(), user);
-        emailIndex.put(user.getEmail(), user);
+        usedEmails.add(user.getEmail()); // cохраняем только email
 
         log.info("Пользователь создан: {}", user);
         return user;
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) { // обновляем существующего пользователя
+    public User update(@Valid @RequestBody User newUser) { // обновляем существующего пользователя
         log.info("Запрос на обновление пользователя: {}", newUser);
-        validateUser(newUser);
 
         // проверка id
         if (newUser.getId() == null) {
@@ -71,14 +68,14 @@ public class UserController { // для обслуживания пользов�
 
         // обновление email
         if (newUser.getEmail() != null && !newUser.getEmail().equals(oldUser.getEmail())) {
-            if (emailIndex.containsKey(newUser.getEmail())) {
+            if (usedEmails.contains(newUser.getEmail())) {
                 log.warn("Email уже используется: {}", newUser.getEmail());
                 throw new DuplicatedDataException("Этот имейл уже используется");
             }
 
-            emailIndex.remove(oldUser.getEmail());
+            usedEmails.remove(oldUser.getEmail());
             oldUser.setEmail(newUser.getEmail());
-            emailIndex.put(newUser.getEmail(), oldUser);
+            usedEmails.add(newUser.getEmail());
         }
 
         // обновление логина
@@ -117,6 +114,12 @@ public class UserController { // для обслуживания пользов�
             log.warn("Дата рождения в будущем: {}", user.getBirthday());
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
+    }
+
+    public void reset() { // очистить (для тестов)
+        users.clear();
+        usedEmails.clear();
+        nextId = 1;
     }
 
 }

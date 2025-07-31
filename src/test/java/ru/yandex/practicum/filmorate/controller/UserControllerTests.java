@@ -2,19 +2,26 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
+
+@SpringBootTest
 class UserControllerTests {
+    @Autowired
     private UserController userController;
     private User validUser;
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        //userController = new UserController();
+        userController.reset();
         validUser = new User();
         validUser.setEmail("valid@email.com");
         validUser.setLogin("validLogin");
@@ -33,7 +40,11 @@ class UserControllerTests {
         User user = validUser;
         user.setEmail("");
 
-        ValidationException exception = assertThrows(ValidationException.class,
+//        ValidationException exception = assertThrows(ValidationException.class,
+//                () -> userController.create(user),
+//                "Должен выбрасывать исключение при пустом email");
+
+        MethodArgumentNotValidException exception = assertThrows(MethodArgumentNotValidException.class,
                 () -> userController.create(user),
                 "Должен выбрасывать исключение при пустом email");
 
@@ -46,7 +57,11 @@ class UserControllerTests {
         User user = validUser;
         user.setEmail(null);
 
-        ValidationException exception = assertThrows(ValidationException.class,
+//        ValidationException exception = assertThrows(ValidationException.class,
+//                () -> userController.create(user),
+//                "Должен выбрасывать исключение при отсутствии email");
+
+        MethodArgumentNotValidException exception = assertThrows(MethodArgumentNotValidException.class,
                 () -> userController.create(user),
                 "Должен выбрасывать исключение при отсутствии email");
 
@@ -59,7 +74,11 @@ class UserControllerTests {
         User user = validUser;
         user.setEmail("invalidemail.com");
 
-        ValidationException exception = assertThrows(ValidationException.class,
+//        ValidationException exception = assertThrows(ValidationException.class,
+//                () -> userController.create(user),
+//                "Должен выбрасывать исключение при email без @");
+
+        MethodArgumentNotValidException exception = assertThrows(MethodArgumentNotValidException.class,
                 () -> userController.create(user),
                 "Должен выбрасывать исключение при email без @");
 
@@ -72,7 +91,11 @@ class UserControllerTests {
         User user = validUser;
         user.setLogin("");
 
-        ValidationException exception = assertThrows(ValidationException.class,
+//        ValidationException exception = assertThrows(ValidationException.class,
+//                () -> userController.create(user),
+//                "Должен выбрасывать исключение при пустом логине");
+
+        MethodArgumentNotValidException exception = assertThrows(MethodArgumentNotValidException.class,
                 () -> userController.create(user),
                 "Должен выбрасывать исключение при пустом логине");
 
@@ -85,7 +108,11 @@ class UserControllerTests {
         User user = validUser;
         user.setLogin(null);
 
-        ValidationException exception = assertThrows(ValidationException.class,
+//        ValidationException exception = assertThrows(ValidationException.class,
+//                () -> userController.create(user),
+//                "Должен выбрасывать исключение при отсутствии логина");
+
+        MethodArgumentNotValidException exception = assertThrows(MethodArgumentNotValidException.class,
                 () -> userController.create(user),
                 "Должен выбрасывать исключение при отсутствии логина");
 
@@ -98,7 +125,11 @@ class UserControllerTests {
         User user = validUser;
         user.setLogin("login with space");
 
-        ValidationException exception = assertThrows(ValidationException.class,
+//        ValidationException exception = assertThrows(ValidationException.class,
+//                () -> userController.create(user),
+//                "Должен выбрасывать исключение при логине с пробелом");
+
+        MethodArgumentNotValidException exception = assertThrows(MethodArgumentNotValidException.class,
                 () -> userController.create(user),
                 "Должен выбрасывать исключение при логине с пробелом");
 
@@ -111,7 +142,11 @@ class UserControllerTests {
         User user = validUser;
         user.setBirthday(LocalDate.now().plusDays(1));
 
-        ValidationException exception = assertThrows(ValidationException.class,
+//        ValidationException exception = assertThrows(ValidationException.class,
+//                () -> userController.create(user),
+//                "Должен выбрасывать исключение при дате рождения в будущем");
+
+        MethodArgumentNotValidException exception = assertThrows(MethodArgumentNotValidException.class,
                 () -> userController.create(user),
                 "Должен выбрасывать исключение при дате рождения в будущем");
 
