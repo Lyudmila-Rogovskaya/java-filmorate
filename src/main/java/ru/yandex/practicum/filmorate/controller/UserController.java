@@ -28,6 +28,7 @@ public class UserController { // для обслуживания пользов�
     @PostMapping
     public User create(@Valid @RequestBody User user) { // создаем нового пользователя
         log.info("Запрос на создание пользователя: {}", user);
+        validateUser(user);
 
         // уникальность email
         if (usedEmails.contains(user.getEmail())) {
@@ -52,6 +53,7 @@ public class UserController { // для обслуживания пользов�
     @PutMapping
     public User update(@Valid @RequestBody User newUser) { // обновляем существующего пользователя
         log.info("Запрос на обновление пользователя: {}", newUser);
+        validateUser(newUser);
 
         // проверка id
         if (newUser.getId() == null) {
