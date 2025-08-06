@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -28,7 +27,6 @@ public class UserController { // для обслуживания пользов�
     @PostMapping
     public User create(@Valid @RequestBody User user) { // создаем нового пользователя
         log.info("Запрос на создание пользователя: {}", user);
-        validateUser(user);
 
         // уникальность email
         if (usedEmails.contains(user.getEmail())) {
@@ -51,9 +49,8 @@ public class UserController { // для обслуживания пользов�
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User newUser) { // обновляем существующего пользователя
+    public User update(@RequestBody User newUser) { // обновляем существующего пользователя
         log.info("Запрос на обновление пользователя: {}", newUser);
-        validateUser(newUser);
 
         // проверка id
         if (newUser.getId() == null) {
@@ -88,7 +85,7 @@ public class UserController { // для обслуживания пользов�
         // обновление имени (если пусто - используем логин)
         if (newUser.getName() != null) {
             oldUser.setName(newUser.getName().isBlank() ?
-                    newUser.getLogin() :
+                    oldUser.getLogin() :
                     newUser.getName());
         }
 
@@ -99,29 +96,6 @@ public class UserController { // для обслуживания пользов�
 
         log.info("Пользователь обновлен: {}", oldUser);
         return oldUser;
-    }
-
-    private void validateUser(User user) { // проверяем на корректность email, логин, дату рождения
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Некорректный email: {}", user.getEmail());
-            throw new ValidationException("Электронная почта должна содержать @");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("Некорректный логин: {}", user.getLogin());
-            throw new ValidationException("Логин не может быть пустым или содержать пробелы");
-        }
-
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Дата рождения в будущем: {}", user.getBirthday());
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-    }
-
-    public void reset() { // очистить (для тестов)
-        users.clear();
-        usedEmails.clear();
-        nextId = 1;
     }
 
 }
