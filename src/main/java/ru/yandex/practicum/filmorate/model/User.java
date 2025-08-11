@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,5 +29,7 @@ public class User { // модель, описывающая пользовате
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday; // дата рождения
+
+    private final Set<Long> friends = new HashSet<>();
 
 }
