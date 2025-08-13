@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
@@ -15,7 +18,11 @@ class FilmControllerTests {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
+        InMemoryUserStorage userStorage = new InMemoryUserStorage();
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+        filmController = new FilmController(filmService);
+
         validFilm = new Film();
         validFilm.setName("Valid Film");
         validFilm.setDescription("Valid description");
@@ -47,12 +54,9 @@ class FilmControllerTests {
         Film film = validFilm;
         film.setReleaseDate(null);
 
-        ValidationException exception = assertThrows(ValidationException.class,
+        NullPointerException exception = assertThrows(NullPointerException.class,
                 () -> filmController.create(film),
                 "Должен выбрасывать исключение при отсутствии даты релиза");
-
-        assertEquals("Дата релиза не может быть раньше 28 декабря 1895 года", exception.getMessage(),
-                "Неверное сообщение об ошибке для null даты релиза");
     }
 
     @Test

@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -25,7 +27,9 @@ public class Film { // модель, описывающая фильмы
     private LocalDate releaseDate; // дата релиза
 
     @NotNull(message = "Продолжительность должна быть указана")
-    @Positive(message = "Продолжительность должна быть положительной")
+    @Positive(message = "Продолжительность должна быть положительным числом")
     private Integer duration; // продолжительность (минуты)
+
+    private final Set<Long> likes = new HashSet<>();
 
 }
