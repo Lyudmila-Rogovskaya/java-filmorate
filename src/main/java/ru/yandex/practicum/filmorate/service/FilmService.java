@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,10 +34,16 @@ public class FilmService {
     }
 
     public Film create(Film film) {
+        if (film.getGenres() == null) {
+            film.setGenres(new HashSet<>());
+        }
         return filmStorage.create(film);
     }
 
     public Film update(Film film) {
+        Film existing = filmStorage.findById(film.getId());
+        film.setGenres(existing.getGenres());
+        film.setMpa(existing.getMpa());
         return filmStorage.update(film);
     }
 

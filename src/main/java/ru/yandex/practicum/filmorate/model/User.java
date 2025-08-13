@@ -32,4 +32,6 @@ public class User { // модель, описывающая пользовате
 
     private final Set<Long> friends = new HashSet<>();
 
+    private final Set<Friendship> friendships = new HashSet<>(); // статусы дружбы
+
 }
