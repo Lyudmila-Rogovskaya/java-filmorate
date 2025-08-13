@@ -32,4 +32,8 @@ public class Film { // модель, описывающая фильмы
 
     private final Set<Long> likes = new HashSet<>();
 
+    private Set<Genre> genres = new HashSet<>(); // жанры
+
+    private Mpa mpa; // рейтинг MPA
+
 }

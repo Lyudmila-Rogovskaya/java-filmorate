@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -44,23 +46,26 @@ public class UserService {
         User user = userStorage.findById(userId);
         User friend = userStorage.findById(friendId);
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        Friendship userToFriend = new Friendship();
+        userToFriend.setFriendId(friendId);
+        userToFriend.setStatus(FriendshipStatus.UNCONFIRMED);
+        user.getFriendships().add(userToFriend);
 
     }
 
     public void removeFriend(Long userId, Long friendId) {
 
         User user = userStorage.findById(userId);
-        User friend = userStorage.findById(friendId);
+        user.getFriendships().removeIf(fs -> fs.getFriendId().equals(friendId));
 
-        if (user.getFriends().contains(friendId)) {
-            user.getFriends().remove(friendId);
-        }
-        if (friend.getFriends().contains(userId)) {
-            friend.getFriends().remove(userId);
-        }
+    }
 
+    public void confirmFriendship(Long userId, Long friendId) {
+        User user = userStorage.findById(userId);
+        user.getFriendships().stream()
+                .filter(fs -> fs.getFriendId().equals(friendId))
+                .findFirst()
+                .ifPresent(fs -> fs.setStatus(FriendshipStatus.CONFIRMED));
     }
 
     public List<User> getFriends(Long userId) {
