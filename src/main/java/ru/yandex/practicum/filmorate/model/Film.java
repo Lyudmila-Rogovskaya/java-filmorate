@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -34,6 +35,10 @@ public class Film { // модель, описывающая фильмы
 
     private Set<Genre> genres = new HashSet<>(); // жанры
 
+    @JsonProperty("mpa")
     private Mpa mpa; // рейтинг MPA
+
+    @JsonProperty("genres")
+    private Integer mpaId; // ид для связи с БД
 
 }

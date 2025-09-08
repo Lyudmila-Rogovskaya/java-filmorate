@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -75,6 +76,64 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public boolean emailExists(String email) {
         return usedEmails.contains(email);
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        if (user != null && friend != null) {
+            user.getFriends().put(friendId, FriendshipStatus.UNCONFIRMED);
+        }
+    }
+
+    @Override
+    public void removeFriend(Long userId, Long friendId) {
+        User user = users.get(userId);
+        if (user != null) {
+            user.getFriends().remove(friendId);
+        }
+    }
+
+    @Override
+    public List<User> getFriends(Long userId) {
+        User user = users.get(userId);
+        if (user == null) {
+            return List.of();
+        }
+        return user.getFriends().keySet().stream()
+                .map(users::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherId) {
+        User user = users.get(userId);
+        User other = users.get(otherId);
+
+        if (user == null || other == null) {
+            return List.of();
+        }
+
+        Set<Long> userFriendIds = user.getFriends().keySet();
+        Set<Long> otherFriendIds = other.getFriends().keySet();
+
+        return userFriendIds.stream()
+                .filter(otherFriendIds::contains)
+                .map(users::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void confirmFriend(Long userId, Long friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        if (user != null && friend != null) {
+            user.getFriends().put(friendId, FriendshipStatus.CONFIRMED);
+            friend.getFriends().put(userId, FriendshipStatus.CONFIRMED);
+        }
     }
 
 }

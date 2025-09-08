@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.dao.DataAccessException;
 
 import java.util.Map;
 
@@ -52,6 +53,13 @@ public class ErrorHandler {
                 .orElse("Ошибка валидации");
         log.error("Ошибка валидации: {}", errorMessage);
         return Map.of("error", errorMessage);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleDataAccessException(DataAccessException e) {
+        log.error("Database error: {}", e.getMessage());
+        return Map.of("error", "Database error");
     }
 
 }

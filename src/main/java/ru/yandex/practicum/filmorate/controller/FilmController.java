@@ -35,14 +35,18 @@ public class FilmController { // для обслуживания фильмов
     public Film create(@Valid @RequestBody Film film) { // создаем новый фильм
         log.info("Запрос на создание фильма: {}", film);
         validateFilm(film);
-        return filmService.create(film);
+        Film createdFilm = filmService.create(film);
+        log.info("Создан фильм: {}", createdFilm);
+        return createdFilm;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) { // обновляем существующий фильм
         log.info("Запрос на обновление фильма: {}", film);
         validateFilm(film);
-        return filmService.update(film);
+        Film updatedFilm = filmService.update(film);
+        log.info("Обновлен фильм: {}", updatedFilm);
+        return updatedFilm;
     }
 
     @PutMapping("/{id}/like/{userId}")

@@ -2,35 +2,27 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
     }
 
-    public List<Film> findAll() {
-        return filmStorage.findAll();
-    }
-
-    public Film findById(Long id) {
-        return filmStorage.findById(id);
+    public void addLike(Long filmId, Long userId) {
+        log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
+        filmStorage.addLike(filmId, userId);
     }
 
     public Film create(Film film) {
@@ -41,35 +33,25 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        Film existing = filmStorage.findById(film.getId());
-        film.setGenres(existing.getGenres());
-        film.setMpa(existing.getMpa());
         return filmStorage.update(film);
-    }
-
-    public void addLike(Long filmId, Long userId) {
-        log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
-        Film film = filmStorage.findById(filmId);
-        userStorage.findById(userId);
-        film.getLikes().add(userId);
     }
 
     public void removeLike(Long filmId, Long userId) {
         log.info("Удаление лайка у фильма {} от пользователя {}", filmId, userId);
-        Film film = filmStorage.findById(filmId);
-        userStorage.findById(userId);
-        film.getLikes().remove(userId);
+        filmStorage.removeLike(filmId, userId);
+    }
+
+    public List<Film> findAll() {
+        return filmStorage.findAll();
+    }
+
+    public Film findById(Long id) {
+        return filmStorage.findById(id);
     }
 
     public List<Film> getPopularFilms(int count) {
-        if (count <= 0) {
-            throw new ValidationException("Параметр count должен быть положительным");
-        }
-
-        return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        log.info("Запрос {} самых популярных фильмов", count);
+        return filmStorage.getPopularFilms(count);
     }
 
 }
