@@ -32,6 +32,7 @@ public class UserDbStorage implements UserStorage {
             String sql = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
             jdbcTemplate.update(sql, userId, friendId);
         } catch (DataIntegrityViolationException e) {
+            throw new NotFoundException("Дружба уже существует");
         }
     }
 
