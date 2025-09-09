@@ -13,7 +13,6 @@ import java.util.Map;
 @Setter
 public class User { // модель, описывающая пользователей
 
-
     private Long id; // идентификатор
 
     @NotBlank(message = "Электронная почта не может быть пустой")

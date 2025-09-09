@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
-import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
+import ru.yandex.practicum.filmorate.storage.bd.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.bd.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.bd.MpaDbStorage;
 
 import java.sql.Date;
 import java.time.LocalDate;
