@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.storage.bd;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,9 +9,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.bd.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.bd.GenreDbStorage;
-import ru.yandex.practicum.filmorate.storage.bd.MpaDbStorage;
 
 import java.sql.Date;
 import java.time.LocalDate;
