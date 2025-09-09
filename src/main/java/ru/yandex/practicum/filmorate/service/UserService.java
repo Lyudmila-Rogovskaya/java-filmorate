@@ -54,8 +54,4 @@ public class UserService {
         return userStorage.findById(id);
     }
 
-    public void confirmFriend(Long userId, Long friendId) {
-        userStorage.confirmFriend(userId, friendId);
-    }
-
 }

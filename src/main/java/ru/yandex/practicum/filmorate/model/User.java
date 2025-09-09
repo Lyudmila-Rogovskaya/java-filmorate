@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -30,6 +30,6 @@ public class User { // модель, описывающая пользовате
     @NotNull(message = "Дата рождения обязательна")
     private LocalDate birthday; // дата рождения
 
-    private Map<Long, FriendshipStatus> friends = new HashMap<>();
+    private final Set<Long> friends = new HashSet<>();
 
 }

@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.bd;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -28,8 +28,11 @@ public class UserDbStorage implements UserStorage {
             throw new NotFoundException("User not found");
         }
 
-        String sql = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, userId, friendId);
+        try {
+            String sql = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
+            jdbcTemplate.update(sql, userId, friendId);
+        } catch (DataIntegrityViolationException e) {
+        }
     }
 
     @Override
@@ -92,16 +95,9 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void loadFriends(User user) {
-        String sql = "SELECT friend_id, status FROM friendships WHERE user_id = ?";
+        String sql = "SELECT friend_id FROM friendships WHERE user_id = ?";
         jdbcTemplate.query(sql, rs -> {
-            Long friendId = rs.getLong("friend_id");
-            String status = rs.getString("status");
-            user.getFriends().put(
-                    friendId,
-                    "confirmed".equals(status) ?
-                            FriendshipStatus.CONFIRMED :
-                            FriendshipStatus.UNCONFIRMED
-            );
+            user.getFriends().add(rs.getLong("friend_id"));
         }, user.getId());
     }
 
@@ -166,23 +162,6 @@ public class UserDbStorage implements UserStorage {
 
         String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
         jdbcTemplate.update(deleteUserSql, id);
-    }
-
-    @Override
-    public void confirmFriend(Long userId, Long friendId) {
-        if (!userExists(userId)) {
-            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
-        }
-        if (!userExists(friendId)) {
-            throw new NotFoundException("Пользователь с id=" + friendId + " не найден");
-        }
-
-        String sql = "UPDATE friendships SET status = 'confirmed' WHERE user_id = ? AND friend_id = ?";
-        jdbcTemplate.update(sql, friendId, userId);
-
-        // Добавляем обратную связь для подтвержденной дружбы
-        String reverseSql = "INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, 'confirmed')";
-        jdbcTemplate.update(reverseSql, userId, friendId);
     }
 
     private boolean userExists(Long userId) {

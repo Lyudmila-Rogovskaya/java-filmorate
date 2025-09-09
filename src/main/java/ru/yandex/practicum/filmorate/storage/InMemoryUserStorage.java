@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -83,7 +82,7 @@ public class InMemoryUserStorage implements UserStorage {
         User user = users.get(userId);
         User friend = users.get(friendId);
         if (user != null && friend != null) {
-            user.getFriends().put(friendId, FriendshipStatus.UNCONFIRMED);
+            user.getFriends().add(friendId);
         }
     }
 
@@ -101,7 +100,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (user == null) {
             return List.of();
         }
-        return user.getFriends().keySet().stream()
+        return user.getFriends().stream()
                 .map(users::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -116,24 +115,14 @@ public class InMemoryUserStorage implements UserStorage {
             return List.of();
         }
 
-        Set<Long> userFriendIds = user.getFriends().keySet();
-        Set<Long> otherFriendIds = other.getFriends().keySet();
+        Set<Long> userFriendIds = user.getFriends();
+        Set<Long> otherFriendIds = other.getFriends();
 
         return userFriendIds.stream()
                 .filter(otherFriendIds::contains)
                 .map(users::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public void confirmFriend(Long userId, Long friendId) {
-        User user = users.get(userId);
-        User friend = users.get(friendId);
-        if (user != null && friend != null) {
-            user.getFriends().put(friendId, FriendshipStatus.CONFIRMED);
-            friend.getFriends().put(userId, FriendshipStatus.CONFIRMED);
-        }
     }
 
 }
