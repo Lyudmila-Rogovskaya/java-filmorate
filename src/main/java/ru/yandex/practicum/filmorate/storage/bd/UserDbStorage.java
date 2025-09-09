@@ -50,6 +50,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Long userId) {
+        if (!userExists(userId)) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
         String sql = "SELECT u.* FROM users u " +
                 "JOIN friendships f ON u.user_id = f.friend_id " +
                 "WHERE f.user_id = ?";
