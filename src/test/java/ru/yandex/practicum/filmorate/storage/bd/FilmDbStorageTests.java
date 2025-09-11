@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.time.LocalDate;
@@ -26,19 +27,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @ActiveProfiles("test")
-@Import({MpaDbStorage.class, GenreDbStorage.class})
+@Import({MpaDbStorage.class, GenreDbStorage.class, LikeDbStorage.class, UserDbStorage.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDbStorageTests {
     private final JdbcTemplate jdbcTemplate;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
+    private final LikeStorage likeStorage;
+    private final UserDbStorage userStorage;
     private FilmDbStorage filmStorage;
-    private UserDbStorage userStorage;
 
     @BeforeEach
     void setUp() {
         filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
-        userStorage = new UserDbStorage(jdbcTemplate);
 
         jdbcTemplate.update("DELETE FROM film_genres");
         jdbcTemplate.update("DELETE FROM likes");
@@ -132,12 +133,12 @@ class FilmDbStorageTests {
         User createdUser = userStorage.create(user);
         Film createdFilm = filmStorage.create(film);
 
-        filmStorage.addLike(createdFilm.getId(), createdUser.getId());
+        likeStorage.addLike(createdFilm.getId(), createdUser.getId());
 
         Film filmWithLike = filmStorage.findById(createdFilm.getId());
         assertThat(filmWithLike.getLikes()).hasSize(1);
 
-        filmStorage.removeLike(createdFilm.getId(), createdUser.getId());
+        likeStorage.removeLike(createdFilm.getId(), createdUser.getId());
 
         Film filmWithoutLike = filmStorage.findById(createdFilm.getId());
         assertThat(filmWithoutLike.getLikes()).isEmpty();
@@ -167,9 +168,9 @@ class FilmDbStorageTests {
         Film createdFilm1 = filmStorage.create(film1);
         Film createdFilm2 = filmStorage.create(film2);
 
-        filmStorage.addLike(createdFilm1.getId(), createdUser1.getId());
-        filmStorage.addLike(createdFilm1.getId(), createdUser2.getId());
-        filmStorage.addLike(createdFilm2.getId(), createdUser1.getId());
+        likeStorage.addLike(createdFilm1.getId(), createdUser1.getId());
+        likeStorage.addLike(createdFilm1.getId(), createdUser2.getId());
+        likeStorage.addLike(createdFilm2.getId(), createdUser1.getId());
 
         List<Film> popularFilms = filmStorage.getPopularFilms(2);
 
@@ -203,4 +204,3 @@ class FilmDbStorageTests {
     }
 
 }
-

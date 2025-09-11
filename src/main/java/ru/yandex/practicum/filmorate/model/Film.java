@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -35,7 +34,6 @@ public class Film { // модель, описывающая фильмы
 
     private Set<Genre> genres = new HashSet<>(); // жанры
 
-    @JsonProperty("mpa")
     private Mpa mpa; // рейтинг MPA
 
 }

@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -38,6 +41,18 @@ public class GenreDbStorage implements GenreStorage {
         genre.setId(rs.getInt("genre_id"));
         genre.setName(rs.getString("name"));
         return genre;
+    }
+
+    @Override
+    public List<Genre> getGenresByIds(Set<Integer> genreIds) {
+        if (genreIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String inSql = String.join(",", Collections.nCopies(genreIds.size(), "?"));
+        String sql = "SELECT * FROM genres WHERE genre_id IN (" + inSql + ")";
+
+        return jdbcTemplate.query(sql, this::mapRowToGenre, genreIds.toArray());
     }
 
 }

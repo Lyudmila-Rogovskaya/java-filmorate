@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.bd;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -23,86 +23,13 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void addFriend(Long userId, Long friendId) {
-        if (!userExists(userId) || !userExists(friendId)) {
-            throw new NotFoundException("User not found");
-        }
-
-        try {
-            String sql = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
-            jdbcTemplate.update(sql, userId, friendId);
-        } catch (DataIntegrityViolationException e) {
-            throw new NotFoundException("Дружба уже существует");
-        }
-    }
-
-    @Override
-    public void removeFriend(Long userId, Long friendId) {
-        if (!userExists(userId)) {
-            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
-        }
-        if (!userExists(friendId)) {
-            throw new NotFoundException("Пользователь с id=" + friendId + " не найден");
-        }
-
-        String sql = "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?";
-        jdbcTemplate.update(sql, userId, friendId);
-    }
-
-    @Override
-    public List<User> getFriends(Long userId) {
-        if (!userExists(userId)) {
-            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
-        }
-        String sql = "SELECT u.* FROM users u " +
-                "JOIN friendships f ON u.user_id = f.friend_id " +
-                "WHERE f.user_id = ?";
-        return jdbcTemplate.query(sql, this::mapRowToUser, userId);
-    }
-
-    @Override
-    public List<User> getCommonFriends(Long userId, Long otherId) {
-        if (!userExists(userId)) {
-            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
-        }
-        if (!userExists(otherId)) {
-            throw new NotFoundException("Пользователь с id=" + otherId + " не найден");
-        }
-
-        String sql = "SELECT u.* FROM friendships f1 " +
-                "JOIN friendships f2 ON f1.friend_id = f2.friend_id " +
-                "JOIN users u ON f1.friend_id = u.user_id " +
-                "WHERE f1.user_id = ? AND f2.user_id = ?";
-        return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
-    }
-
-    @Override
     public User findById(Long id) {
-        if (!userExists(id)) {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, this::mapRowToUser, id);
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Пользователь с id=" + id + " не найден");
         }
-
-        String sql = "SELECT * FROM users WHERE user_id = ?";
-        User user = jdbcTemplate.queryForObject(sql, this::mapRowToUser, id);
-        loadFriends(user);
-        return user;
-    }
-
-    private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("user_id"));
-        user.setEmail(rs.getString("email"));
-        user.setLogin(rs.getString("login"));
-        user.setName(rs.getString("name"));
-        user.setBirthday(rs.getDate("birthday").toLocalDate());
-        return user;
-    }
-
-    private void loadFriends(User user) {
-        String sql = "SELECT friend_id FROM friendships WHERE user_id = ?";
-        jdbcTemplate.query(sql, rs -> {
-            user.getFriends().add(rs.getLong("friend_id"));
-        }, user.getId());
     }
 
     @Override
@@ -172,6 +99,16 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
         return count != null && count > 0;
+    }
+
+    private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
+        User user = new User();
+        user.setId(rs.getLong("user_id"));
+        user.setEmail(rs.getString("email"));
+        user.setLogin(rs.getString("login"));
+        user.setName(rs.getString("name"));
+        user.setBirthday(rs.getDate("birthday").toLocalDate());
+        return user;
     }
 
 }

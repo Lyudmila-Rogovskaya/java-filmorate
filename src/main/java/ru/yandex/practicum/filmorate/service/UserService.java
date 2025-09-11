@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
@@ -13,10 +14,12 @@ import java.util.List;
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendshipStorage friendshipStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, FriendshipStorage friendshipStorage) {
         this.userStorage = userStorage;
+        this.friendshipStorage = friendshipStorage;
     }
 
     public List<User> findAll() {
@@ -34,19 +37,29 @@ public class UserService {
 
     public void addFriend(Long userId, Long friendId) {
         log.info("Добавление в друзья: пользователь {} -> пользователь {}", userId, friendId);
-        userStorage.addFriend(userId, friendId);
+
+        findById(userId);
+        findById(friendId);
+
+        log.info("Добавление в друзья: пользователь {} -> пользователь {}", userId, friendId);
+        friendshipStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
-        userStorage.removeFriend(userId, friendId); // Делегируем хранилищу
+        findById(userId);
+        findById(friendId);
+        friendshipStorage.removeFriend(userId, friendId); // Делегируем хранилищу
     }
 
     public List<User> getFriends(Long userId) {
-        return userStorage.getFriends(userId); // Делегируем хранилищу
+        findById(userId);
+        return friendshipStorage.getFriends(userId); // Делегируем хранилищу
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
-        return userStorage.getCommonFriends(userId, otherId); // Делегируем хранилищу
+        findById(userId);
+        findById(otherId);
+        return friendshipStorage.getCommonFriends(userId, otherId); // Делегируем хранилищу
     }
 
     public User findById(Long id) {
