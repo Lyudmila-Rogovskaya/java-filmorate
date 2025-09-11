@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final GenreStorage genreStorage;
+    //private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
 
     @Override
@@ -95,8 +95,13 @@ public class FilmDbStorage implements FilmStorage {
         film.setDescription(rs.getString("description"));
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
-        Mpa mpa = mpaStorage.getMpaById(rs.getInt("mpa_id"));
+
+        Mpa mpa = new Mpa();
+        mpa.setId(rs.getInt("mpa_id"));
+        mpa.setName(rs.getString("mpa_code"));
+        mpa.setDescription(rs.getString("mpa_description"));
         film.setMpa(mpa);
+
         return film;
     }
 
@@ -190,14 +195,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film findById(Long id) {
-        String sql = "SELECT * FROM films WHERE film_id = ?";
+        String sql = "SELECT f.*, m.code AS mpa_code, m.description AS mpa_description " +
+                "FROM films f JOIN mpa_ratings m ON f.mpa_id = m.mpa_id WHERE f.film_id = ?";
         try {
-            Film film = jdbcTemplate.queryForObject(sql, this::mapRowToFilmBasic, id);
-            if (film != null) {
-
-                loadGenres(Collections.singletonList(film));
-                loadLikes(Collections.singletonList(film));
-            }
+            Film film = jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
+            loadGenres(Collections.singletonList(film));
+            loadLikes(Collections.singletonList(film));
             return film;
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Фильм с id=" + id + " не найден");
