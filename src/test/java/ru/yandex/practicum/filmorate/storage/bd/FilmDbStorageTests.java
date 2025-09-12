@@ -39,7 +39,7 @@ class FilmDbStorageTests {
 
     @BeforeEach
     void setUp() {
-        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate, mpaStorage);
 
         jdbcTemplate.update("DELETE FROM film_genres");
         jdbcTemplate.update("DELETE FROM likes");
