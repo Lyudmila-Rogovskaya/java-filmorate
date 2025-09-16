@@ -2,32 +2,44 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.bd.*;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@JdbcTest
+@ActiveProfiles("test")
+@Import({FilmDbStorage.class, UserDbStorage.class,
+        MpaDbStorage.class, GenreDbStorage.class,
+        LikeDbStorage.class, FilmService.class, FilmController.class})
 class FilmControllerTests {
+    @Autowired
     private FilmController filmController;
+
+    @Autowired
+    private MpaDbStorage mpaStorage;
+
     private Film validFilm;
 
     @BeforeEach
     void setUp() {
-        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
-        InMemoryUserStorage userStorage = new InMemoryUserStorage();
-        FilmService filmService = new FilmService(filmStorage, userStorage);
-        filmController = new FilmController(filmService);
-
         validFilm = new Film();
         validFilm.setName("Valid Film");
         validFilm.setDescription("Valid description");
         validFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
         validFilm.setDuration(120);
+
+        Mpa mpa = mpaStorage.getMpaById(1); // G рейтинг
+        validFilm.setMpa(mpa);
     }
 
     @Test

@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,13 +23,13 @@ public class User { // модель, описывающая пользовате
     @Pattern(regexp = "\\S+", message = "Логин не может содержать пробелы")
     private String login; // логин пользователя
 
+    @JsonProperty("name")
     private String name; // имя для отображения
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
+    @NotNull(message = "Дата рождения обязательна")
     private LocalDate birthday; // дата рождения
 
     private final Set<Long> friends = new HashSet<>();
-
-    private final Set<Friendship> friendships = new HashSet<>(); // статусы дружбы
 
 }

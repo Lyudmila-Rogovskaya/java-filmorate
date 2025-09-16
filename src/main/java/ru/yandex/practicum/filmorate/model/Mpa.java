@@ -6,7 +6,7 @@ import lombok.Data;
 public class Mpa {
 
     private int id;
-    private String code;
+    private String name;
     private String description;
 
 }

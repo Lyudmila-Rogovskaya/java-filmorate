@@ -1,13 +1,18 @@
-package ru.yandex.practicum.filmorate.exception;
+package ru.yandex.practicum.filmorate.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.util.Map;
 
@@ -36,6 +41,13 @@ public class ErrorHandler {
         return Map.of("error", e.getMessage());
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.error("Нарушение целостности данных: {}", e.getMessage());
+        return Map.of("error", "Нарушение целостности данных: возможно, данные не уникальны");
+    }
+
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleThrowable(final Throwable e) {
@@ -52,6 +64,13 @@ public class ErrorHandler {
                 .orElse("Ошибка валидации");
         log.error("Ошибка валидации: {}", errorMessage);
         return Map.of("error", errorMessage);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleDataAccessException(DataAccessException e) {
+        log.error("Database error: {}", e.getMessage());
+        return Map.of("error", "Database error");
     }
 
 }

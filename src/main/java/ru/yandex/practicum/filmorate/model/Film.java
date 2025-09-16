@@ -30,7 +30,7 @@ public class Film { // модель, описывающая фильмы
     @Positive(message = "Продолжительность должна быть положительным числом")
     private Integer duration; // продолжительность (минуты)
 
-    private final Set<Long> likes = new HashSet<>();
+    private final Set<Long> likes = new HashSet<>(); // лайки
 
     private Set<Genre> genres = new HashSet<>(); // жанры
 
